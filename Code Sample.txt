@@ -1,0 +1,98 @@
+/**************************************************************
+
+Daily Stock Market Simulation Program
+Description:
+This C++ program simulates a daily stock market using a simple
+buy and sell strategy. The user provides the initial stock price
+at which they bought their stock. The program generates random
+numbers to simulate the market, and if the price goes down, it
+signals the user to sell, and if it goes up, it suggests buying.
+The program also calculates and displays various statistics,
+including the highest/lowest price, percentage change, amount
+change, and total difference. It also color codes the prices. 
+Green for high, Red for low.
+Author: Rhythm Ray
+Date: 12.07.2023
+
+
+**************************************************************/
+
+#include <iostream>
+#include <random>
+#include <chrono>
+#include <thread>
+#include <iomanip>
+
+//Terminal color codes. 
+const std::string GREEN_COLOR = "\033[1;32m";
+const std::string RED_COLOR = "\033[1;31m";
+const std::string WHITE_COLOR = "\033[1;37m";
+const std::string RESET_COLOR = "\033[0m";
+
+int main() 
+{
+    //User is asked to enter stock price
+    float userInput;
+    std::cout << "Please enter the stock value: ";
+    std::cin >> userInput;
+
+    //Generate and prints 100 random numbers
+    //The random numbers ranges from -2 to +2. This is to simulate real time price up and down
+    //Range is within 20 and 80. considering there is not too much volatility
+    std::random_device rd;
+    std::mt19937 generator(rd());
+    std::uniform_real_distribution<float> initialDistribution(30.0, 70.0);
+    std::uniform_real_distribution<float> differenceDistribution(-2.0, 2.0);
+
+    float firstNumber = initialDistribution(generator);
+    float previousNumber = firstNumber;
+    float lowestPrice = firstNumber;
+    float highestPrice = firstNumber;
+    std::cout << "Generating prices:\n";
+    std::cout << "Day Opened: " << firstNumber << "\n";
+
+    for (int i = 0; i < 99; i++) 
+    {
+        float difference = differenceDistribution(generator);
+        float currentNumber = previousNumber + difference;
+
+        //Ensure the generated number is within the range of 20 and 80
+        if (currentNumber < 20.0)
+            currentNumber = 20.0;
+        else if (currentNumber > 80.0)
+            currentNumber = 80.0;
+
+        if (currentNumber > previousNumber)
+            std::cout << GREEN_COLOR << currentNumber << " - Buy now\n"; //Set color to green and print "Buy now" for rising numbers. This is only to visually differentiate
+        else
+            std::cout << RED_COLOR << currentNumber << " - Sell now\n"; //''
+
+        // Check if the current number reaches 110% of the user input
+        if (currentNumber >= 1.1 * userInput)
+            std::cout << WHITE_COLOR << "Strongly suggesting sell now\n"; //''
+
+        //std::cout << RESET_COLOR; // Reset color to default
+
+        previousNumber = currentNumber;
+
+        // Update lowest and highest prices
+        if (currentNumber < lowestPrice)
+            lowestPrice = currentNumber;
+        if (currentNumber > highestPrice)
+            highestPrice = currentNumber;
+
+        // Wait for a short duration before generating the next number
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    }
+
+    float lastNumber = previousNumber;
+
+    std::cout << "Day Closed: " << lastNumber << "\n";
+    std::cout << "\nPrice Change\n";
+    std::cout << "Amount Change: " << (lastNumber - firstNumber) << "\n";
+    std::cout << "Percentage Change: " << std::fixed << std::setprecision(2) << (((lastNumber - firstNumber) / firstNumber) * 100) << "%\n";
+    std::cout << "Lowest Price: " << lowestPrice << "\n";
+    std::cout << "Highest Price: " << highestPrice << "\n";
+
+    return 0;
+}
